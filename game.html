@@ -16,6 +16,7 @@
     var ballY = canvas.height/2;
     var vx = 5;
     var vy = 5;
+    const winScore = 5;
     const PADDLE_HEIGHT = 100;
     const PADDLE_THICK = 10;
     var paddle1Y;
@@ -33,6 +34,7 @@
             movePaddle();
             draw();
         }, 1000/frames);
+        canvas.addEventListener('click', handleMouseClick);
         canvas.addEventListener('mousemove',
             function(evt) {
             var mousePos = calculateMousePos(evt);
@@ -41,13 +43,25 @@
         })
 
     };
+
+    function handleMouseClick() {
+        if(showVictory) {
+            p1Score = 0;
+            p2Score = 0;
+            showVictory = false;
+        }
+    }
     function moveBall() {
+        if (showVictory) {
+            return;
+        }
         ballX = ballX + vx;
         ballY = ballY + vy;
+
         if ( ballX <= 0){
             if (ballY > paddle1Y + PADDLE_HEIGHT || ballY <paddle1Y) {
-                ballReset();
                 p2Score++;
+                ballReset();
             }else {
                 if (vx < 15 && vx > - 15){
                     vx = vx * -1;
@@ -60,8 +74,8 @@
         }
         if (ballX >= canvas.width -5) {
             if (ballY > paddle2Y + PADDLE_HEIGHT || ballY <paddle2Y) {
-                ballReset();
                 p1Score++;
+                ballReset();
             }else {
                 if (vx < 15 && vx > -15){
                     vx = vx * -1;
@@ -99,15 +113,15 @@
 
     function movePaddle() {
         if (paddle2Y + PADDLE_HEIGHT/2 - ballY < -50) {
-            paddle2Y += 12;
-        } else if (paddle2Y + PADDLE_HEIGHT/2 - ballY < -10) {
             paddle2Y += 7;
+        } else if (paddle2Y + PADDLE_HEIGHT/2 - ballY < -10) {
+            paddle2Y += 3;
         } else if (paddle2Y + PADDLE_HEIGHT/2 - ballY < 0) {
-            paddle2Y += 1;
+            paddle2Y += 0;
         } else if (paddle2Y + PADDLE_HEIGHT/2 - ballY < 10) {
-            paddle2Y -= 7;
+            paddle2Y -= 3;
         } else {
-            paddle2Y -= 12;
+            paddle2Y -= 7;
         }
     }
 
@@ -118,6 +132,21 @@
         drawRect(0, paddle1Y, 10, PADDLE_HEIGHT, 'white');
         drawRect(canvas.width-10 , paddle2Y, PADDLE_THICK, PADDLE_HEIGHT, 'white');
         canvasContext.textAlign = "center";
+        if (showVictory) {
+            canvasContext.fillStyle = "rgba(137, 137, 160, 0.5)";
+            canvasContext.fillRect(50, 50, canvas.width - 100, canvas.height - 100);
+            canvasContext.fillStyle = 'white';
+            canvasContext.font = "80px Arial";
+            if (p2Score === winScore) {
+                canvasContext.fillText("YOU LOSE!" , canvas.width/2, canvas.height/2);
+            } else {
+                canvasContext.fillText("YOU WIN!", canvas.width/2, canvas.height/2);
+            }
+            canvasContext.font = "40px Arial";
+            canvasContext.fillText("Press to play again!", canvas.width/2, (canvas.height/4) * 3);
+            return;
+
+        }
         canvasContext.font = "14px Arial";
         canvasContext.fillText("Player 1 Score: " + p1Score, canvas.width/4, canvas.height/6);
         canvasContext.fillText("Player 2 Score: " + p2Score, 3* canvas.width/4, canvas.height/6);
@@ -127,10 +156,17 @@
 
     }
     function ballReset() {
+        if (p1Score === winScore || p2Score === winScore) {
+            showVictory = true;
+        }
         ballX = canvas.width/2;
         ballY = canvas.height/2;
-    }
 
+        vy = randomNum(-5, 5);
+    }
+    function randomNum(min, max) {
+        return Math.random() * (max-min) + min;
+    }
     function calculateMousePos(evt) {
         var rect = canvas.getBoundingClientRect();
         var root = document.documentElement;
