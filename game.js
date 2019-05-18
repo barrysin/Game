@@ -30,7 +30,6 @@ function start(){
             paddle1Y = mousePos.y - PADDLE_HEIGHT/2;
 
         })
-
 }
 
 function handleMouseClick() {
